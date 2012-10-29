@@ -337,6 +337,8 @@ typedef KIFTestStepResult (^KIFTestStepExecutionBlock)(KIFTestStep *step, NSErro
  */
 + (id)stepToEnterText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label;
 
++ (id)stepToTryEnteringText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label;
+
 /*!
  @method stepToEnterText:intoViewWithAccessibilityLabel:traits:
  @abstract A step that enters text into a particular view in the view hierarchy.

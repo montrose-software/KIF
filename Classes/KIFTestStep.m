@@ -293,6 +293,7 @@ typedef CGPoint KIFDisplacement;
         }
 
         UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value tappable:YES traits:traits error:error];
+
         if (!element) {
             return KIFTestStepResultWait;
         }
@@ -405,6 +406,35 @@ typedef CGPoint KIFDisplacement;
             NSString *actual = [[view performSelector:@selector(text)] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
             KIFTestCondition([actual isEqualToString:expected], error, @"Failed to actually enter text \"%@\" in field; instead, it was \"%@\"", text, actual);
         }
+        
+        return KIFTestStepResultSuccess;
+    }];
+}
+
++ (id)stepToTryEnteringText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label
+{
+    return [self stepToTryEnteringText:text intoViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone expectedResult:nil];
+}
+
++ (id)stepToTryEnteringText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString *)expectedResult;
+{
+    NSString *description = [NSString stringWithFormat:@"Try to type the text \"%@\" into the view with accessibility label \"%@\"", text, label];
+    return [self stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
+        
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil tappable:YES traits:traits error:error];
+        if (!element) {
+            return KIFTestStepResultWait;
+        }
+        
+        UIView *view = [UIAccessibilityElement viewContainingAccessibilityElement:element];
+        KIFTestWaitCondition(view, error, @"Cannot find view with accessibility label \"%@\"", label);
+        
+        CGRect elementFrame = [view.window convertRect:element.accessibilityFrame toView:view];
+        CGPoint tappablePointInElement = [view tappablePointInRect:elementFrame];
+        
+        // This is mostly redundant of the test in _accessibilityElementWithLabel:
+        KIFTestCondition(!isnan(tappablePointInElement.x), error, @"The element with accessibility label %@ is not tappable", label);
+        [view tapAtPoint:tappablePointInElement];
         
         return KIFTestStepResultSuccess;
     }];
